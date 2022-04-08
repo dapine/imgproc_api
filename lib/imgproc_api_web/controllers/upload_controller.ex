@@ -32,15 +32,21 @@ defmodule ImgprocApiWeb.UploadController do
 		{h, _} = Integer.parse(height)
 
 		# XXX: move these params to changeset
-		headers = [{:type, type}, {:content_type, content_type}, {:width, w}, {:height, h}]
+		headers = [{:content_type, content_type}, {:width, w}, {:height, h}]
 
-		IO.inspect headers
+		{exchange, key} = resolve_queue(type)
 
-		response = AmqpClient.send(bytes, headers)
+		response = AmqpClient.send(exchange, key, bytes, headers)
 
 		conn
 		|> put_resp_header("content-type", content_type)
 		|> resp(:ok, response)
+	end
+
+	defp resolve_queue(type) do
+		case type do
+			"resize" -> {"image_processing", "resize"}
+		end
 	end
 
   def show(conn, %{"id" => id}) do

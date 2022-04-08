@@ -1,5 +1,5 @@
 defmodule ImgprocApi.AmqpClient do
-	def send(bytes, headers) do
+	def send(exchange, key, bytes, headers) do
 		{:ok, conn} = AMQP.Connection.open
 		{:ok, chan} = AMQP.Channel.open(conn)
 
@@ -13,8 +13,8 @@ defmodule ImgprocApi.AmqpClient do
 			|> Base.encode64
 
 		AMQP.Basic.publish(chan, 
-		"hello_exchange",
-		"teste",
+		exchange,
+		key,
 		bytes, 
 		headers: headers,
 		reply_to: callback_queue,

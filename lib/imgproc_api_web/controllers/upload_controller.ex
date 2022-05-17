@@ -23,17 +23,21 @@ defmodule ImgprocApiWeb.UploadController do
     end
   end
 
-	def upload(conn, 
-		%{"file" => %{content_type: content_type, filename: _filename, path: path}, 
-			"type" => type, "width" => width, "height" => height}) do
+	@type upload_params :: %{
+		file: Plug.Upload.t,
+		type: String.t,
+		width: integer,
+		height: integer,
+		angle: integer
+	}
+
+	@spec upload(Plug.Conn.t, upload_params) :: Plug.Conn.t
+	def upload(conn, params) do
+		%{"file" => %{content_type: content_type, filename: _filename, path: path}} = params
+		%{"type" => type} = params
+
 		{:ok, bytes} = File.read(path)
-
-		{w, _} = Integer.parse(width)
-		{h, _} = Integer.parse(height)
-
-		# XXX: move these params to changeset
-		headers = [{:content_type, content_type}, {:width, w}, {:height, h}]
-
+		headers = resolve_headers(params)
 		{exchange, key} = resolve_queue(type)
 
 		response = AmqpClient.send(exchange, key, bytes, headers)
@@ -46,6 +50,28 @@ defmodule ImgprocApiWeb.UploadController do
 	defp resolve_queue(type) do
 		case type do
 			"resize" -> {"image_processing", "resize"}
+			"rotate" -> {"image_processing", "rotate"}
+		end
+	end
+
+	defp resolve_headers(params) do
+		%{"type" => type} = params
+		%{"file" => %{content_type: content_type, filename: _filename, path: _path}} = params
+		case type do
+			"resize" ->
+				%{"width" => width} = params
+				%{"height" => height} = params
+
+				{w, _} = Integer.parse(width)
+				{h, _} = Integer.parse(height)
+
+				[{:content_type, content_type}, {:width, w}, {:height, h}]
+			"rotate" ->
+				%{"angle" => angle} = params
+
+				{a, _} = Integer.parse(angle)
+
+				[{:content_type, content_type}, {:angle, a}]
 		end
 	end
 

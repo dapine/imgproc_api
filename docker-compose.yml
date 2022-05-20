@@ -1,0 +1,32 @@
+services:
+  imgproc_api:
+    build:
+      context: .
+    ports: 
+      - "4000:4000"
+    environment:
+      - DB_HOSTNAME=postgres
+    networks:
+      - local
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:14.3
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data
+    volumes:
+      - ./imgproc-api:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: "exit 0"
+    networks:
+      - local
+
+networks:
+  local:
+    driver: bridge

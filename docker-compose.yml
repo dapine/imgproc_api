@@ -6,8 +6,9 @@ services:
       - "4000:4000"
     environment:
       - DB_HOSTNAME=postgres
-    networks:
-      - local
+      - AMQP_HOSTNAME=rabbitmq
+    # networks:
+    #   - local
     depends_on:
       postgres:
         condition: service_healthy
@@ -24,9 +25,14 @@ services:
       - "5432:5432"
     healthcheck:
       test: "exit 0"
-    networks:
-      - local
+    # networks:
+    #   - local
+
+# networks:
+#   local:
+#     driver: bridge
 
 networks:
-  local:
-    driver: bridge
+  default:
+    name: imgproc_imgproc_net
+    external: true

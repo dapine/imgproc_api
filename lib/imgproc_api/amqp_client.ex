@@ -1,6 +1,8 @@
 defmodule ImgprocApi.AmqpClient do
 	def send(exchange, key, bytes, headers) do
-		{:ok, conn} = AMQP.Connection.open
+		env_host = System.get_env("AMQP_HOSTNAME")
+		conn_options = [host: env_host || "localhost", port: 5672, virtual_host: "/", username: "guest", password: "guest"]
+		{:ok, conn} = AMQP.Connection.open(conn_options)
 		{:ok, chan} = AMQP.Channel.open(conn)
 
 		{:ok, %{queue: callback_queue}} = AMQP.Queue.declare(chan, "", exclusive: true)

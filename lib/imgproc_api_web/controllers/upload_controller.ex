@@ -51,6 +51,11 @@ defmodule ImgprocApiWeb.UploadController do
 		case type do
 			"resize" -> {"image_processing", "resize"}
 			"rotate" -> {"image_processing", "rotate"}
+			"convert" -> {"image_processing", "convert"}
+			"crop" -> {"image_processing", "crop"}
+			"enlarge" -> {"image_processing", "enlarge"}
+			"extract" -> {"image_processing", "extract"}
+			"flip" -> {"image_processing", "flip"}
 		end
 	end
 
@@ -59,8 +64,7 @@ defmodule ImgprocApiWeb.UploadController do
 		%{"file" => %{content_type: content_type, filename: _filename, path: _path}} = params
 		case type do
 			"resize" ->
-				%{"width" => width} = params
-				%{"height" => height} = params
+				%{"width" => width, "height" => height} = params
 
 				{w, _} = Integer.parse(width)
 				{h, _} = Integer.parse(height)
@@ -72,6 +76,36 @@ defmodule ImgprocApiWeb.UploadController do
 				{a, _} = Integer.parse(angle)
 
 				[{:content_type, content_type}, {:angle, a}]
+			"convert" ->
+				%{"target_image_type" => target} = params
+
+				[{:content_type, content_type}, {:target_image_type, target}]
+			"crop" ->
+				%{"width" => width, "height" => height, "gravity" => gravity} = params
+
+				{w, _} = Integer.parse(width)
+				{h, _} = Integer.parse(height)
+
+				[{:content_type, content_type}, {:width, w}, {:height, h}, {:gravity, gravity}]
+			"enlarge" ->
+				%{"width" => width, "height" => height} = params
+
+				{w, _} = Integer.parse(width)
+				{h, _} = Integer.parse(height)
+
+				[{:content_type, content_type}, {:width, w}, {:height, h}]
+			"extract" ->
+				%{"width" => width, "height" => height, "x" => x, "y" => y} = params
+
+				{w, _} = Integer.parse(width)
+				{h, _} = Integer.parse(height)
+				{xx, _} = Integer.parse(x)
+				{yy, _} = Integer.parse(y)
+
+				[{:content_type, content_type}, {:width, w}, {:height, h}, {:x, xx}, {:y, yy}]
+			"flip" ->
+				%{"axis" => axis} = params
+				[{:content_type, content_type}, {:axis, axis}]
 		end
 	end
 
